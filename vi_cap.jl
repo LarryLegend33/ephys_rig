@@ -1,6 +1,7 @@
 using PVCAM
 using GLMakie
 using DataStructures
+using AMQPClient
 
 function start_image_session()
     polled_cont!()
@@ -39,4 +40,31 @@ function live_image()
         curr_image[] = im
         sleep(1/framerate)
     end   
+end
+
+struct RabServer
+    port::Int64
+    connection::AMQPClient.Connection
+    exchange::String
+    routing_key::String
+    channel::AMQPClient.MessageChannel
+end
+    
+function RabServer()
+    port = AMQPClient.AMQP_DEFAULT_PORT
+    amqps = amqps_configure()
+    conn = connection(; virtualhost="/", host="localhost", port=port, auth_params=AMQPClient.DEFAULT_AUTH_PARAMS)
+    # DO NOT USE THE AUTH PARAMS! 
+    EXCG_DIRECT = "amq.direct"
+    ROUTE1 = "routingkey1"
+    chan1 = channel(conn, 1, true)
+    qvarbs = queue_declare(chan1, "fish_queue")
+    queue_bind(chan1, "fish_queue", EXCG_DIRECT, ROUTE1)       
+    return RabServer(port, conn, EXCG_DIRECT, ROUTE1, chan1)
+end
+
+function post_message(server::RabServer, message::String)
+    data = convert(Vector{UInt8}, codeunits(message))
+    msg = Message(data, content_type="text/plain", delivery_mode=PERSISTENT)
+    basic_publish(server.channel, msg; exchange=server.exchange, routing_key=server.routing_key)
 end
