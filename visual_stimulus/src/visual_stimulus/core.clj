@@ -21,15 +21,15 @@
 (def qname "fish_queue")
 ;; (def iql_directory "/home/andrewbolton/inferenceql.auto-modeling/data/xcat/ensemble.edn")
 
-(def envwidth 1280)
-(def envheight 720)
+(def envwidth 1260)
+(def envheight 840)
 
 ;; can eventually update this with triangular and sinusoidal motion.
 ;; see wave code in diagonal.clj
 (defn setup-visstim []
   (q/frame-rate 60)
   {:center_x 0
-   :center_y (- envheight (/ envheight 5))
+   :center_y (/ envheight 3)
    :epoch 0
    :translation_rate 3})
 
