@@ -68,3 +68,14 @@ function post_message(server::RabServer, message::String)
     msg = Message(data, content_type="text/plain", delivery_mode=PERSISTENT)
     basic_publish(server.channel, msg; exchange=server.exchange, routing_key=server.routing_key)
 end
+
+
+cv.VideoWriter()
+
+# note that 1200x1200 UInt8 goes into an hdf5 at ~1.4-1.9 msec.
+# using VideoIO takes 10-14 milliseconds. but its probably a good idea at the end of the run to write a video from HDF5.
+# to use hdf5,
+#      file = h5open("test.h5", "w")
+#      write(file, "1", myarr)
+#      when you're done, close file. 
+

@@ -37,7 +37,7 @@
 ; if == 0, if start detected, add 1. bump the epoch each time center_x is = envwidth. 
 
 (defn update-state [state]
-  (q/frame-rate 30)
+  (q/frame-rate 60)
   {:triwave (:triwave state)
    :translation_rate (:translation_rate state)
    ; change epoch function to get noises to switch faster
