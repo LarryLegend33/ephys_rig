@@ -3,6 +3,8 @@ using GLMakie
 using DataStructures
 using AMQPClient
 
+
+# can call polled_cont with an exposure time flag. 
 function start_image_session()
     polled_cont!()
 end
@@ -10,19 +12,22 @@ end
 function cap_and_show()
     f = latest_frame()
     im = reshape(f, (1200, 1200))
-    image(im)
+    image_figure = Figure(resolution=(1200,1200), outer_padding=0)
+    image_axis = Axis(image_figure[1,1])
+    image!(image_axis, im, interpolate=false, colorrange=(0,4095))
+    display(image_figure)
     return im
 end
 
 function live_image()
-    framerate = 100
+    framerate = 50
     f = latest_frame()
     im = reshape(f, (1200, 1200))
     image_buffer = CircularBuffer{typeof(im)}(5)
     image_figure = Figure(resolution=(1200,1200), outer_padding=0)
     image_axis = Axis(image_figure[1,1])
     curr_image = Observable(im)
-    imshown = image!(image_axis, curr_image)
+    imshown = image!(image_axis, curr_image, interpolate=false, colorrange=(0, 4095))
     #    record(gt_scene, "stimulus.mp4", 1:size(dotmotion)[1]; framerate=60) do i
     #    for i in 1:size(dotmotion)[1]
     display(image_figure)
@@ -37,6 +42,9 @@ function live_image()
         i += 1
         f = latest_frame()
         im = reshape(f, (1200, 1200))
+        if mod(i, 100) == 1
+            print(im[1])
+        end
         curr_image[] = im
         sleep(1/framerate)
     end   
@@ -70,7 +78,7 @@ function post_message(server::RabServer, message::String)
 end
 
 
-cv.VideoWriter()
+# cv.VideoWriter()
 
 # note that 1200x1200 UInt8 goes into an hdf5 at ~1.4-1.9 msec.
 # using VideoIO takes 10-14 milliseconds. but its probably a good idea at the end of the run to write a video from HDF5.
@@ -79,3 +87,19 @@ cv.VideoWriter()
 #      write(file, "1", myarr)
 #      when you're done, close file. 
 
+
+
+# get_param in pvcam seems to have a mistake -- you provide a pointer p and it returns "true" indicating that it's populated the pointer, but the pointer is empty. 
+
+#p = Ref{Cvoid}()
+#p2 = Ref{Ptr{Cvoid}}()
+
+# GETTING AND SETTING PARAMS REQUIRES PROPER CONVERSION FROM CONSTANT DEFINED VALUES
+
+# e.g.
+
+# E.g. the handle of the camera has to be scoped.
+
+#PL.get_param(PVCAM.CAMERA_HANDLE[], Int(PL.PP_), Int(PL.ATTR_TYPE), p)
+
+# for PP_FEATURE_IDS, which is an enum, you have to use .hash i think. you have to subscript the correct variable after that. 
