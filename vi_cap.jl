@@ -91,7 +91,7 @@ end
 
 # get_param in pvcam seems to have a mistake -- you provide a pointer p and it returns "true" indicating that it's populated the pointer, but the pointer is empty. 
 
-#p = Ref{Cvoid}()
+
 #p2 = Ref{Ptr{Cvoid}}()
 
 # GETTING AND SETTING PARAMS REQUIRES PROPER CONVERSION FROM CONSTANT DEFINED VALUES
@@ -100,6 +100,14 @@ end
 
 # E.g. the handle of the camera has to be scoped.
 
-#PL.get_param(PVCAM.CAMERA_HANDLE[], Int(PL.PP_), Int(PL.ATTR_TYPE), p)
+
+p = Ref{Cvoid}()
+i = Ref{Cint}()
+desc = Ref{Cstring}()
+
+PL.get_param(PVCAM.CAMERA_HANDLE[], Int(PL.PARAM_FRAME_DELIVERY_MODE), Int(PL.ATTR_TYPE), p)
+PL.get_enum_param(PVCAM.CAMERA_HANDLE[], UInt32(PL.PL_COOL_MODES), Int(PL.NORMAL_COOL), i, 5000)
+PL.get_enum_param(PVCAM.CAMERA_HANDLE[], 1, Int(PL.NORMAL_COOL), i, desc, 5000)
+
 
 # for PP_FEATURE_IDS, which is an enum, you have to use .hash i think. you have to subscript the correct variable after that. 
